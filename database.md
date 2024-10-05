@@ -22,4 +22,28 @@ _Tomas and Jaden_
 - It uses restful api
 - This folder is it’s own sub app, as it holds its own views and urls
 - The utils is like the utilities that the authentication can use
-- backend.py holds the main way to authe
+- backend.py holds the main way to authenticate the user
+- It uses json web tokens, so that api requests in the future can be authenticated with the users session token
+- There’s also an ensure user is truly user and has all their information function
+- There are many functions that all work together to authenticate the user, ensure the user is logged in and has a valid JWT
+- This is where user sessions can be maintained, by keeping the JWT token with the user
+- middleware.py intercepts requests to ensure that user authentication is valid before continuing with what they’re doing
+- It checks whether there is a valid Azure B2C token, and allows user to continue their action if it is valid
+- if middleware finds a token, it sends it to backend.py to verify it. Once verified, backend gives control back to middleware which allows the user to access the view
+- If invalid, it logs user out and redirects them to login page
+- The other folders have similar systems, just different purposes
+- models.py holds schemas or models for data types
+- To make a new database object (new schema), you can create a new model
+
+## django_project/azure_auth/migrations/ :
+
+- Migrations holds all the active setups of the database
+- You can make migrations (when the database is changed via django admin) and migrate
+- This sets up the initial database schema and data
+
+## django_project/core/api/ :
+
+- These are where all the endpoints are stored? Where you can query data
+- There are functions that return database information (includes CRUD), so I assume this is the actual api endpoints and database molding portion
+- This is where you can query and alter the data in the database
+- Users can be somewhat maintained in the user file, where they can be altered and changed
