@@ -31,6 +31,16 @@ import { arrayToOptions, delay } from "../../../../../../utils/main";
 
 import './style.scss';
 
+// function to construct the SDMX API URL
+function constructApiUrl(input_data) {
+  
+}
+// function to make API calls (get the data) and update the state
+async function get_data(input_data, setRequest, setData, setAttributes) {
+  
+}
+
+
 
 let sdmxApiInput = null;
 /**
