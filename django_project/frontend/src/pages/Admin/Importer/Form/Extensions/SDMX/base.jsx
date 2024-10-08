@@ -33,18 +33,50 @@ import './style.scss';
 
 // function to construct the SDMX API URL
 function constructApiUrl(input_data) {
-  
+  let base_url;
+
+  // handle different implementations - for now, it's just "implementation 1"
+  switch (input_data.sdmx_implementation) {
+    case 'implementation 1':
+      base_url = 'https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/';
+      break;
+    // add more cases here in the future for different implementations
+    default:
+      throw new Error('Unknown SDMX implementation');
+  }
+
+  // construct the API URL using the input_data
+  // todo: not sure if these are the correct attributes for input_data, but based off medium article :)
+  let api_url = `${base_url}data/${input_data.agency_id},${input_data.dataset_id},1.0/${input_data.country_code}.${input_data.indicator_code}/all`;
+
+  // append query parameters like time period and format (csv)
+  api_url += `?startPeriod=${input_data.startPeriod}&endPeriod=${input_data.endPeriod}&format=csv`;
+
+  return api_url;
 }
-// function to make API calls (get the data) and update the state
-async function get_data(input_data, setRequest, setData, setAttributes) {
-  
+
+async function get_data(input_data, setData) {
+  // step 1: construct the api url using input_data
+  const api_url = constructApiUrl(input_data);
+
+  // step 2: set the api url in the data object and call readUrl
+  setData({ ...input_data, url: api_url });  // Update data with the new URL
+
+  // step 3: Ccll readUrl with the constructed url
+  await readUrl(api_url);  // use existing readUrl function to handle fetching and processing
 }
+
+// call get_data when any input data changes
+useEffect(() => {
+
+  get_data(input_data);
+}, [input_data]); 
 
 
 
 let sdmxApiInput = null;
 /**
- * Base Excel Form.
+ * Base Excel Form. 
  * @param {dict} data .
  * @param {Function} setData Set data.
  * @param {dict} files .
