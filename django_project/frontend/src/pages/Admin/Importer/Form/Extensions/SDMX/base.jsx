@@ -70,8 +70,44 @@ async function get_data(input_data, setData) {
 useEffect(() => {
 
   get_data(input_data);
-}, [input_data]); 
+}, [input_data]);
 
+/* data queried from the SDMX API will look something like this: data['data']['structure']['dimensions']
+{'dataset': [],
+ 'series': [{'id': 'REF_AREA',
+   'name': 'Geographic area',
+   'keyPosition': 0,
+   'role': None,
+   'values': [{'id': 'UNICEF_WE', 'name': 'Western Europe'}]},
+  {'id': 'INDICATOR',
+   'name': 'Indicator',
+   'keyPosition': 1,
+   'role': None,
+   'values': [{'id': 'DM_POP_TOT',
+     'name': 'Total population',
+     'description': 'Total population'},
+    {'id': 'DM_POP_U5',
+     'name': 'Population under age 5',
+     'description': 'Population under age 5'},
+*/
+
+// function to get dimensions and name of dimensions from query if there are dimensions in returned data
+function getDimensions(data) {
+  if (!data || !data['data'] || !data['data']['structure'] || !data['data']['structure']['dimensions']) {
+    console.log('Invalid data structure');
+    return [];
+  }
+
+  const seriesDimensions = data['data']['structure']['dimensions']['series'];
+  // Find the INDICATOR dimension in the series array
+  const indicatorDimension = seriesDimensions.find(dim => dim['id'] === 'INDICATOR');
+  if (!indicatorDimension || !indicatorDimension['values']) {
+    console.log('No indicator dimension found or no values in indicator dimension');
+    return [];
+  }
+
+  return indicatorDimension['values'].map(indicator => indicator['name']);
+}
 
 
 let sdmxApiInput = null;
@@ -88,8 +124,8 @@ let sdmxApiInput = null;
  */
 export const BaseSDMXForm = forwardRef(
   ({
-     data, setData, files, setFiles, attributes, setAttributes, children
-   }, ref
+    data, setData, files, setFiles, attributes, setAttributes, children
+  }, ref
   ) => {
     const { readString } = usePapaParse();
     const [url, setUrl] = useState('');
@@ -215,7 +251,7 @@ export const BaseSDMXForm = forwardRef(
           SDMX Url
         </label>
         <IconTextField
-          iconEnd={(loading ? <CircularProgress/> : null)}
+          iconEnd={(loading ? <CircularProgress /> : null)}
           value={url}
           onChange={evt => urlChanged(evt.target.value)}
         />
