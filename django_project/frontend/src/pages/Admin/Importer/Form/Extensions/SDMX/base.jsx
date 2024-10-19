@@ -46,8 +46,8 @@ let sdmxApiInput = null;
  */
 export const BaseSDMXForm = forwardRef(
   ({
-     data, setData, files, setFiles, attributes, setAttributes, children
-   }, ref
+    data, setData, files, setFiles, attributes, setAttributes, api_response, children
+  }, ref
   ) => {
     const { readString } = usePapaParse();
     const [url, setUrl] = useState('');
@@ -89,6 +89,13 @@ export const BaseSDMXForm = forwardRef(
         }
       }, [data]
     )
+
+    // Handle API response
+    useEffect(() => {
+      if (api_response) {
+        render_response(api_response);
+      }
+    }, [api_response]);
 
     // /** Read url **/
     // const readUrl = async (url) => {
@@ -160,11 +167,11 @@ export const BaseSDMXForm = forwardRef(
                 row.id = idx;  // Add unique ID to each row for the DataGrid
                 return row;
               });
-    
+
               // Extract headers for rendering in DataGrid columns
               const headers = Object.keys(json[0]);
               const array = [headers];
-    
+
               // Convert JSON data to array format for attributes
               json.slice(1).forEach(_ => {
                 const row = [];
@@ -173,7 +180,7 @@ export const BaseSDMXForm = forwardRef(
                 });
                 array.push(row);
               });
-    
+
               // Set default values for data fields if not already set
               if (!data.date_time_data_field) {
                 data.date_time_data_field = 'TIME_PERIOD';
@@ -181,16 +188,16 @@ export const BaseSDMXForm = forwardRef(
               if (!data.key_value) {
                 data.key_value = 'OBS_VALUE';
               }
-    
+
               // Update the request state with parsed data
               setRequest({ loading: false, error: '', requestData: json });
-    
+
               // Update attributes state (used for dropdowns or other UI elements)
               setAttributes(arrayToOptions(array));
-    
+
               // Delay to give time for UI updates before setting the final data state
               await delay(500);
-    
+
               // Update the data state
               setData({ ...data });
             } else {
@@ -226,19 +233,20 @@ export const BaseSDMXForm = forwardRef(
           if (force || data.url !== newUrl) {
             data.url = newUrl
             setData({ ...data })
-            readUrl(newUrl)
+            // readUrl(newUrl)
           }
           setUrl(newUrl)
         }
       }, 500);
     }
+
     return <Fragment>
       <div className="BasicFormSection">
         <label className="form-label required" htmlFor="group">
           SDMX Url
         </label>
         <IconTextField
-          iconEnd={(loading ? <CircularProgress/> : null)}
+          iconEnd={(loading ? <CircularProgress /> : null)}
           value={url}
           onChange={evt => urlChanged(evt.target.value)}
         />
