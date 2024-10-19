@@ -46,8 +46,8 @@ let sdmxApiInput = null;
  */
 export const BaseSDMXForm = forwardRef(
   ({
-     data, setData, files, setFiles, attributes, setAttributes, children
-   }, ref
+    data, setData, files, setFiles, attributes, setAttributes, api_response, children
+  }, ref
   ) => {
     const { readString } = usePapaParse();
     const [url, setUrl] = useState('');
@@ -90,63 +90,135 @@ export const BaseSDMXForm = forwardRef(
       }, [data]
     )
 
-    /** Read url **/
-    const readUrl = async (url) => {
-      if (!url || url !== sdmxApiInput) {
-        return
+    // Handle API response
+    useEffect(() => {
+      if (api_response) {
+        render_response(api_response);
       }
-      setRequest({ loading: true, error: '', requestData: null })
-      const options = { url }
-      let axiosResponse = await axios(options);
+    }, [api_response]);
+
+    // /** Read url **/
+    // const readUrl = async (url) => {
+    //   if (!url || url !== sdmxApiInput) {
+    //     return
+    //   }
+    //   setRequest({ loading: true, error: '', requestData: null })
+    //   const options = { url }
+    //   let axiosResponse = await axios(options);
+    //   try {
+    //     readString(axiosResponse.data, {
+    //       header: true,
+    //       worker: true,
+    //       complete: async (result) => {
+    //         if (result.errors.length <= 1) {
+    //           const json = result.data.map((row, idx) => {
+    //             row.id = idx
+    //             return row
+    //           })
+    //           const headers = Object.keys(json[0])
+    //           const array = [headers]
+    //           json.slice(1).map(_ => {
+    //             const row = []
+    //             headers.map(header => {
+    //               row.push(_[header])
+    //             })
+    //             array.push(row)
+    //           })
+
+    //           if (!data.date_time_data_field) {
+    //             data.date_time_data_field = 'TIME_PERIOD'
+    //           }
+    //           if (!data.key_value) {
+    //             data.key_value = 'OBS_VALUE'
+    //           }
+    //           setRequest({ loading: false, error: '', requestData: json })
+    //           setAttributes(arrayToOptions(array))
+    //           await delay(500);
+    //           setData({ ...data })
+    //         } else {
+    //           setRequest({
+    //             loading: false,
+    //             error: 'The request is not csv format',
+    //             requestData: null
+    //           })
+    //         }
+    //       },
+    //     })
+    //   } catch (error) {
+    //     setRequest({
+    //       loading: false,
+    //       error: 'The request is not csv format',
+    //       requestData: null
+    //     })
+
+    //   }
+    // }
+
+    const render_response = (api_response) => {
       try {
-        readString(axiosResponse.data, {
-          header: true,
-          worker: true,
+        // Using PapaParse to parse the CSV data (just like with axiosResponse)
+        readString(api_response.data, {
+          header: true,   // First row as header
+          worker: true,   // Parse in a web worker (non-blocking)
           complete: async (result) => {
             if (result.errors.length <= 1) {
+              // Process the CSV data into JSON format
               const json = result.data.map((row, idx) => {
-                row.id = idx
-                return row
-              })
-              const headers = Object.keys(json[0])
-              const array = [headers]
-              json.slice(1).map(_ => {
-                const row = []
-                headers.map(header => {
-                  row.push(_[header])
-                })
-                array.push(row)
-              })
+                row.id = idx;  // Add unique ID to each row for the DataGrid
+                return row;
+              });
 
+              // Extract headers for rendering in DataGrid columns
+              const headers = Object.keys(json[0]);
+              const array = [headers];
+
+              // Convert JSON data to array format for attributes
+              json.slice(1).forEach(_ => {
+                const row = [];
+                headers.forEach(header => {
+                  row.push(_[header]);
+                });
+                array.push(row);
+              });
+
+              // Set default values for data fields if not already set
               if (!data.date_time_data_field) {
-                data.date_time_data_field = 'TIME_PERIOD'
+                data.date_time_data_field = 'TIME_PERIOD';
               }
               if (!data.key_value) {
-                data.key_value = 'OBS_VALUE'
+                data.key_value = 'OBS_VALUE';
               }
-              setRequest({ loading: false, error: '', requestData: json })
-              setAttributes(arrayToOptions(array))
+
+              // Update the request state with parsed data
+              setRequest({ loading: false, error: '', requestData: json });
+
+              // Update attributes state (used for dropdowns or other UI elements)
+              setAttributes(arrayToOptions(array));
+
+              // Delay to give time for UI updates before setting the final data state
               await delay(500);
-              setData({ ...data })
+
+              // Update the data state
+              setData({ ...data });
             } else {
+              // Handle errors during CSV parsing
               setRequest({
                 loading: false,
-                error: 'The request is not csv format',
+                error: 'The response is not in CSV format',
                 requestData: null
-              })
+              });
             }
           },
-        })
+        });
       } catch (error) {
+        // Handle any unexpected errors during processing
         setRequest({
           loading: false,
-          error: 'The request is not csv format',
+          error: 'There was an error processing the response',
           requestData: null
-        })
-
+        });
       }
-    }
-
+    };
     // When file changed
     const urlChanged = (newUrl, force = false) => {
       setUrl(newUrl)
@@ -161,19 +233,20 @@ export const BaseSDMXForm = forwardRef(
           if (force || data.url !== newUrl) {
             data.url = newUrl
             setData({ ...data })
-            readUrl(newUrl)
+            // readUrl(newUrl)
           }
           setUrl(newUrl)
         }
       }, 500);
     }
+
     return <Fragment>
       <div className="BasicFormSection">
         <label className="form-label required" htmlFor="group">
           SDMX Url
         </label>
         <IconTextField
-          iconEnd={(loading ? <CircularProgress/> : null)}
+          iconEnd={(loading ? <CircularProgress /> : null)}
           value={url}
           onChange={evt => urlChanged(evt.target.value)}
         />
