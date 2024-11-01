@@ -12,7 +12,8 @@
  * __date__ = '13/06/2023'
  * __copyright__ = ('Copyright 2023, Unicef')
  */
-
+import DropdownComponent
+ from '../../../../../../components/DImensionDropdown';
 import React, {
   forwardRef,
   Fragment,
@@ -271,6 +272,7 @@ export const BaseSDMXForm = forwardRef(
           disableSelectionOnClick
           loading={loading}
         />
+        <DropdownComponent> </DropdownComponent>
       </div>
     </Fragment>
   }
