@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+
 
 // dimension options =  a dictionary of all the dimensions, where the key is each dimension (dropdown) and the 
 // value is a list of all the options that the user can select for each dimension
@@ -39,19 +40,45 @@ const DropdownComponent = ({ dimensionOptions, dimensionsSelected, onDimensionsC
 // should take in a dimensionOptions item, and dimensionsSelected
 // title if the key, options in dropdown are the values
 // logic to handle/ modify dimensionsSelected when options are selected
+// search function
 
 const SingleDropdown = ({ dimension, options, selectedValues, onSelectionChange }) => {
-   
+    const [searchQuery, setSearchQuery] = useState(""); // State to hold the search query
+
+    // Handle search query change
+    const handleSearchChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
+
+    // Filter and rank options based on the search query
+    const filteredOptions = useMemo(() => {
+        if (!searchQuery) return options;
+
+        return options
+            .filter(option => option.toLowerCase().includes(searchQuery.toLowerCase())) // Filter options by search
+            .sort((a, b) => a.toLowerCase().indexOf(searchQuery.toLowerCase()) - b.toLowerCase().indexOf(searchQuery.toLowerCase())); // Rank based on relevance
+    }, [options, searchQuery]);
+
+    // Handle dropdown selection change
     const handleChange = (event) => {
         const selectedOptions = Array.from(event.target.selectedOptions, (option) => option.value);
-        onSelectionChange(selectedOptions); // send updated selections to DropdownComponent
+        onSelectionChange(selectedOptions); // Send updated selections to parent component
     };
 
     return (
         <div style={{ marginBottom: "15px" }}>
             <label>{dimension}</label>
+            {/* Search input */}
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search options..."
+                style={{ width: "100%", marginBottom: "5px", padding: "5px" }}
+            />
+            {/* Dropdown with multiple selection */}
             <select multiple value={selectedValues} onChange={handleChange} style={{ width: "100%", padding: "5px" }}>
-                {options.map((option) => (
+                {filteredOptions.map((option) => (
                     <option key={option} value={option}>
                         {option}
                     </option>
