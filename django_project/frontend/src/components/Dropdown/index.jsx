@@ -10,7 +10,7 @@ import React, { useState, useEffect } from "react";
 // this component should make a dropdown for each dimension option with the dropdown holding the proper values
 // should also update the dimensionsSelected that is passed in
 
-const DropdownComponent = ({ dimensionOptions, dimensionsSelected, onDimensionsChange }) => {
+export const DropdownComponent = ({ dimensionOptions, dimensionsSelected, onDimensionsChange }) => {
     // function to handle selection changes and update dimensionsSelected in the parent
     const handleSelectionChange = (dimension, selectedValues) => {
         const updatedSelections = { ...dimensionsSelected, [dimension]: selectedValues };

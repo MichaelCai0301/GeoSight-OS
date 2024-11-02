@@ -28,6 +28,8 @@ import { updateDataWithSetState } from "../../utils";
 import { IconTextField } from "../../../../../../components/Elements/Input";
 import { MainDataGrid } from "../../../../../../components/MainDataGrid";
 import { arrayToOptions, delay } from "../../../../../../utils/main";
+//import { DropdownComponent } from "../../../../../../components/Dropdown";
+
 
 import './style.scss';
 
@@ -46,8 +48,8 @@ let sdmxApiInput = null;
  */
 export const BaseSDMXForm = forwardRef(
   ({
-     data, setData, files, setFiles, attributes, setAttributes, children
-   }, ref
+    data, setData, files, setFiles, attributes, setAttributes, children
+  }, ref
   ) => {
     const { readString } = usePapaParse();
     const [url, setUrl] = useState('');
@@ -173,7 +175,7 @@ export const BaseSDMXForm = forwardRef(
           SDMX Url
         </label>
         <IconTextField
-          iconEnd={(loading ? <CircularProgress/> : null)}
+          iconEnd={(loading ? <CircularProgress /> : null)}
           value={url}
           onChange={evt => urlChanged(evt.target.value)}
         />
@@ -209,3 +211,30 @@ export const BaseSDMXForm = forwardRef(
     </Fragment>
   }
 )
+
+
+function make_components(agency, dataflow, dimensions) {
+  //For now, assume each param agency and dataflow is an array of 2 items:
+  //the options list at index 0 and the currently displayed option at index 1
+  //The dimensions param is a dictionary of arrays, one array for each white dimension
+
+
+  return (
+    <div>
+      <label SDMX Dataset Options />
+      {/* render blue dropdowns for: Agency, Dataflow */}
+      <DropdownComponent title={"Agency"} optionsList={agency[0]} optionSelected={agency[1]} />
+      <DropdownComponent title={"Dataflow"} optionsList={dataflow[0]} optionSelected={dataflow[1]} />
+
+      <label Select Indicator Options />
+      {/* render white dimensions */}
+      {Object.entries(dimensions).map(([name, options]) => (
+        <DimensionComponent title={name} optionsList={options} optionSelected={null} />
+      ))}
+    </div>
+  );
+
+  //pass in same dimensions dictionary into Vivian's white component function
+}
+
+
