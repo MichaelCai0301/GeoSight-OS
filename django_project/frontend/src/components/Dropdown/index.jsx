@@ -1,57 +1,57 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 
-// dimension options =  a dictionary of all the dimensions, where the key is each dimension (dropdown) and the 
-// value is a list of all the options that the user can select for each dimension
+const Dropdown = ({ title, options, selectedValues, onSelectionChange }) => {
+    const [searchQuery, setSearchQuery] = useState(""); // State for the search input
 
-// dimension selected = a dictionary of all the dimensions, where the key is each dimension (dropdown) and the 
-// value is a list of that the user has selected for each dimension
-
-// TODO: DropdownComponent
-// this component should make a dropdown for each dimension option with the dropdown holding the proper values
-// should also update the dimensionsSelected that is passed in
-
-export const DropdownComponent = ({ dimensionOptions, dimensionsSelected, onDimensionsChange }) => {
-    // function to handle selection changes and update dimensionsSelected in the parent
-    const handleSelectionChange = (dimension, selectedValues) => {
-        const updatedSelections = { ...dimensionsSelected, [dimension]: selectedValues };
-        onDimensionsChange(updatedSelections); // send back to parent new selection state
+    // Handle the change in search input
+    const handleSearchChange = (event) => {
+        setSearchQuery(event.target.value);
     };
 
-    return (
-        <div>
-            <h2>Select Options</h2>
-            {/* render a SingleDropdown for each dimension */}
-            {Object.keys(dimensionOptions).map((dimension) => (
-                <SingleDropdown
-                    key={dimension}
-                    dimension={dimension}
-                    options={dimensionOptions[dimension]}
-                    selectedValues={dimensionsSelected[dimension] || []} // set default to empty array if none selected
-                    onSelectionChange={(selectedValues) => handleSelectionChange(dimension, selectedValues)}
-                />
-            ))}
-        </div>
-    );
-};
+    // Filter and rank options based on the search query
+    const filteredOptions = useMemo(() => {
+        if (!searchQuery) return options;
 
-// TODO: SingleDropdown
-// subcomponent to render each individual dropdown
-// should take in a dimensionOptions item, and dimensionsSelected
-// title if the key, options in dropdown are the values
-// logic to handle/ modify dimensionsSelected when options are selected
+        return options
+            .filter(option => option.toLowerCase().includes(searchQuery.toLowerCase())) // Filter by search query
+            .sort((a, b) =>
+                a.toLowerCase().indexOf(searchQuery.toLowerCase()) -
+                b.toLowerCase().indexOf(searchQuery.toLowerCase())
+            ); // Rank based on relevance
+    }, [options, searchQuery]);
 
-const SingleDropdown = ({ dimension, options, selectedValues, onSelectionChange }) => {
-
+    // Handle selection changes in the dropdown
     const handleChange = (event) => {
         const selectedOptions = Array.from(event.target.selectedOptions, (option) => option.value);
-        onSelectionChange(selectedOptions); // send updated selections to DropdownComponent
+        onSelectionChange(selectedOptions); // Send selected values back to the parent
     };
 
     return (
         <div style={{ marginBottom: "15px" }}>
-            <label>{dimension}</label>
-            <select multiple value={selectedValues} onChange={handleChange} style={{ width: "100%", padding: "5px" }}>
-                {options.map((option) => (
+            <label>{title}</label>
+            {/* Search input */}
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Search options..."
+                style={{ width: "100%", marginBottom: "5px", padding: "5px" }}
+            />
+            {/* Dropdown with light blue background */}
+            <select
+                multiple
+                value={selectedValues}
+                onChange={handleChange}
+                style={{
+                    width: "100%",
+                    padding: "5px",
+                    backgroundColor: "#ADD8E6", // Light blue background
+                    color: "black",
+                    border: "1px solid #ccc",
+                    borderRadius: "5px"
+                }}
+            >
+                {filteredOptions.map((option) => (
                     <option key={option} value={option}>
                         {option}
                     </option>
@@ -61,4 +61,4 @@ const SingleDropdown = ({ dimension, options, selectedValues, onSelectionChange 
     );
 };
 
-export default DropdownComponent;
+export default Dropdown;

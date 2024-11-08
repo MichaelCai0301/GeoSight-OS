@@ -28,8 +28,8 @@ import { updateDataWithSetState } from "../../utils";
 import { IconTextField } from "../../../../../../components/Elements/Input";
 import { MainDataGrid } from "../../../../../../components/MainDataGrid";
 import { arrayToOptions, delay } from "../../../../../../utils/main";
-//import { DropdownComponent } from "../../../../../../components/Dropdown";
-
+//using provided dummy dropdown component for now
+import { SelectWithList } from '../../../../../../components/Input/SelectWithList';
 
 import './style.scss';
 
@@ -59,6 +59,28 @@ export const BaseSDMXForm = forwardRef(
       requestData: null
     });
     const { error, loading, requestData } = request
+
+    //api response state variable
+    const [apiResponse, setApiResponse] = useState();
+
+    //agency dropdown component
+    const [agencyDropdown, setAgencyDropdown] = useState(<SelectWithList list={['Agency 1', 'Agency 2']} value={'Agency 2'} > </SelectWithList>);
+    //dataflow dropdown component
+    const [dataflowDropdown, setDataflowDropdown] = useState(<SelectWithList list={['Dataflow 1', 'Dataflow 2']} value={'Dataflow 2'} > </SelectWithList>);
+
+    //placeholder dictionary to be passed in to make_components
+    const dict = {
+      'Geographic Area': ['a', 'b'],
+      'Subregion': ['c', 'd'],
+      'Sex': ['e', 'f']
+    };
+
+    const [dimensionsComponents, setDimensionsComponents] = useState(Object.entries(dict).map(([name, options]) => (
+      <div>
+        <label> {name} </label>
+        <SelectWithList list={options} > </SelectWithList>
+      </div>
+    )));
 
     // Ready check
     useImperativeHandle(ref, () => ({
@@ -184,6 +206,17 @@ export const BaseSDMXForm = forwardRef(
         {
           error ? <div className='error'>{error}</div> : null
         }
+
+        {/*Display agency and dataflow blue dropdowns*/}
+        <label> Agency </label>
+        {agencyDropdown}
+        <label> Dataflow </label>
+        {dataflowDropdown}
+
+        <hr />
+
+        {dimensionsComponents}
+
       </div>
       {children}
       <div className='RetrievedData'>
@@ -213,28 +246,28 @@ export const BaseSDMXForm = forwardRef(
 )
 
 
-function make_components(agency, dataflow, dimensions) {
-  //For now, assume each param agency and dataflow is an array of 2 items:
-  //the options list at index 0 and the currently displayed option at index 1
-  //The dimensions param is a dictionary of arrays, one array for each white dimension
+function make_components(agency, dataflow, dimensions, apiResponse) {
+  /*
+  INPUTS
+    - agency and dataflow is an array of 2 items:
+       index 0: options list
+       index 1: currently displayed option
+    - apiResponse is a data blob
+    - dimensions is a dictionary of arrays, one array for each white dimension
+  */
 
+  //Update agency & dataflow blue dropdown components via state vars 
+  setAgencyDropdown(<SelectWithList list={agency[0]} value={agency[1]} > </SelectWithList>);
+  setDataflowDropdown(<SelectWithList list={dataflow[0]} value={dataflow[1]} > </SelectWithList>);
 
-  return (
+  //Show each white dropdown component in dimensions dictionary via state vars
+  setDimensionsComponents(Object.entries(dimensions).map(([name, options]) => (
     <div>
-      <label SDMX Dataset Options />
-      {/* render blue dropdowns for: Agency, Dataflow */}
-      <DropdownComponent title={"Agency"} optionsList={agency[0]} optionSelected={agency[1]} />
-      <DropdownComponent title={"Dataflow"} optionsList={dataflow[0]} optionSelected={dataflow[1]} />
-
-      <label Select Indicator Options />
-      {/* render white dimensions */}
-      {Object.entries(dimensions).map(([name, options]) => (
-        <DimensionComponent title={name} optionsList={options} optionSelected={null} />
-      ))}
+      <label> {name} </label>
+      <SelectWithList list={options} > </SelectWithList>
     </div>
-  );
+  )));
 
-  //pass in same dimensions dictionary into Vivian's white component function
+  //set api response blob of data
+  setApiResponse(apiResponse);
 }
-
-
