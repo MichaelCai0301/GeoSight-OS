@@ -76,7 +76,6 @@ const restrictDataflowOptions = async (agencyParam) => {
     return { error: "Error fetching dataflows." };
   }
 
-  console.log(dataflowDetailsList);
   return dataflowDetailsList;
 };
 
@@ -138,7 +137,6 @@ const updateDsd = async (dataflow, dimensions, dataflowVersion = "1.0") => {
     }, {});
 
     const sdmxImplementation = ["implementation 1"];
-    console.log(updatedDimensions);
 
     return { updatedDimensions, apiResponse, sdmxImplementation };
   } catch (error) {
