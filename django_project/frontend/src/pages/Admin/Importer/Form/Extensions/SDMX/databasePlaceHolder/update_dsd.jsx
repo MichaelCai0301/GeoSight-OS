@@ -26,8 +26,6 @@ const propagateAgencyOptions = async () => {
   return agencyList; // Return as a list of agency objects
 };
 
-
-
 const restrictDataflowOptions = async (agencyParam) => {
   const apiUrl = `https://sdmx.data.unicef.org/ws/public/sdmxapi/rest/dataflow/`;
   const dataflowDetailsList = []; // List to hold the details of each dataflow
@@ -117,9 +115,9 @@ const updateDimensions = async (dataflow, dataflowVersion = "1.0") => {
     return { error: "Error fetching dimensions" };
   }
 
-  const { updatedDimensions } = await updateDsd(dataflow, dimensionSelections, dataflowVersion);
+  const { updatedDimensions, apiResponse } = await updateDsd(dataflow, dimensionSelections, dataflowVersion);
 
-  return { dimensionSelections, updatedDimensions };
+  return { dimensionSelections, updatedDimensions, apiResponse };
 };
 
 const updateDsd = async (dataflow, dimensions, dataflowVersion = "1.0") => {
@@ -165,7 +163,7 @@ const updateDsd = async (dataflow, dimensions, dataflowVersion = "1.0") => {
     console.log(updatedDimensions)
 
     // return {updatedDimensions, finalUrl, apiResponse, sdmxImplementation};
-    return { updatedDimensions, apiUrl, apiResponse, sdmxImplementation };
+    return { updatedDimensions, apiResponse, sdmxImplementation };
   } catch (error) {
     console.error("Error fetching or parsing DSD from API:", error);
     return { error: "Error fetching data" };
