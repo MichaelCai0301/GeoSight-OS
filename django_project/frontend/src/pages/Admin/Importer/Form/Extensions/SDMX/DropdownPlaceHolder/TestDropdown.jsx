@@ -7,7 +7,7 @@ import {
   restrictDataflowOptions,
   updateDimensions,
   updateDsd,
-} from "../../django_project/frontend/src/pages/databasePlaceHolder/update_dsd"; // Adjust the path as necessary
+} from "./DropdownHelpers"; // Adjust the path as necessary
 
 const TestUpdateDsd = () => {
   // ==========================
