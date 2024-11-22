@@ -25,6 +25,8 @@ const DsdForm = ({ urlChanged, setRequest }) => {
 
   const [dsdResult, setDsdResult] = useState(null);
 
+  const [currentUrl, setCurrentUrl] = useState(null);
+
   const [loading, setLoading] = useState({
     agency: false,
     dataflow: false,
@@ -54,9 +56,14 @@ const DsdForm = ({ urlChanged, setRequest }) => {
   // Fetch DSD on dimension change
   useEffect(() => {
     if (!selectedDataflow) return;
-    fetchDsd(selectedDataflow, dimensionSelections, setDsdResult, urlChanged, setError, setLoading);
+    fetchDsd(selectedDataflow, dimensionSelections, setDsdResult, setCurrentUrl, setError, setLoading);
 
   }, [dimensionSelections, selectedDataflow]);
+
+  const handleSubmit = async () => {
+    urlChanged(currentUrl);
+  };
+
 
   // Handle dimension selection change
   const handleDimensionChange = async (dimensionId, selectedOptions) => {
@@ -146,6 +153,7 @@ const DsdForm = ({ urlChanged, setRequest }) => {
           </div>
         </section>
       )}
+      <button onClick={handleSubmit}>Submit</button>
     </div>
   );
 };
