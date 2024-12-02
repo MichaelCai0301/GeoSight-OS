@@ -68,6 +68,7 @@ const restrictDataflowOptions = async (agencyParam) => {
           id: dataflowID,
           dsdId: dataflowDsdID,
           dataflowAgency: agencyID,
+          dataflowVersion: null, // Null by default but should be selected in frontend
         });
       }
     });
@@ -79,8 +80,38 @@ const restrictDataflowOptions = async (agencyParam) => {
   return dataflowDetailsList;
 };
 
+const propagateDataflowVersions = async (dataflow) => {
+  const apiUrl = API_URLS.dataflowVersions(dataflow.dataflowAgency, dataflow.id)
+  const dataflowVersions = []
+
+  try {
+    // Fetch data from API using axios
+    const response = await axios.get(apiUrl);
+    const xmlString = response.data
+
+    // Parse the XML response using DOMParser
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, "application/xml")
+
+    // Extract dataflow elements
+    const dataflowNodes = xmlDoc.getElementsByTagName("str:Dataflow");
+
+    // Iterate through Dataflow elements and extract version attributes
+    Array.from(dataflowNodes).forEach((dataflowNode) => {
+      const version = dataflowNode.getAttribute("version");
+      if (version) {
+        dataflowVersions.push(version);
+      }
+    });
+  } catch (error) {
+    return { error: "Error fetching dataflow versions" };
+  }
+
+  return dataflowVersions;
+}
+
 // Function to update dimension selections for a dataflow
-const updateDimensions = async (dataflow, dataflowVersion = "1.0") => {
+const updateDimensions = async (dataflow, dataflowVersion) => {
   const apiUrl = API_URLS.datastructure(dataflow.dataflowAgency, dataflow.dsdId, dataflowVersion);
   const dimensionSelections = {};
 
@@ -117,7 +148,7 @@ const updateDimensions = async (dataflow, dataflowVersion = "1.0") => {
 };
 
 // Function to update DSD based on selected dimensions
-const updateDsd = async (dataflow, dimensions, dataflowVersion = "1.0") => {
+const updateDsd = async (dataflow, dimensions, dataflowVersion) => {
   try {
     // Construct the URL section based on dimensions
     const urlSection = Object.entries(dimensions)
@@ -145,4 +176,4 @@ const updateDsd = async (dataflow, dimensions, dataflowVersion = "1.0") => {
   }
 };
 
-export { propagateAgencyOptions, restrictDataflowOptions, updateDimensions, updateDsd };
+export { propagateAgencyOptions, restrictDataflowOptions, propagateDataflowVersions, updateDimensions, updateDsd };
